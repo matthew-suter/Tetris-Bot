@@ -11,7 +11,8 @@ from typing import Any, List, Sequence, Tuple
 
 
 # Create the environment
-env = gym.make("CartPole-v1")
+# env = gym.make("CartPole-v1")
+env = gym.make("ALE/Tetris-v5", obs_type="ram")
 
 # Set seed for experiment reproducibility
 seed = 42
@@ -57,6 +58,15 @@ class ActorCritic(tf.keras.Model):
     #     "sublayer": tf.keras.saving.serialize_keras_object(self.sublayer),
     # }
     return {**base_config, **config}
+
+  def get_config(self):
+    base_config = super().get_config()
+    config = {}
+    # config = {
+    #     "sublayer": tf.keras.saving.serialize_keras_object(self.sublayer),
+    # }
+    return {**base_config, **config}
+
 
 num_actions = env.action_space.n  # 2
 num_hidden_units = 128
@@ -272,7 +282,7 @@ def train_step(
 # %%time
 
 min_episodes_criterion = 100
-max_episodes = 1000 #10000
+max_episodes = 10 #10000
 max_steps_per_episode = 500
 
 # `CartPole-v1` is considered solved if average reward is >= 475 over 500
@@ -310,7 +320,7 @@ for i in t:
 print(f'\nSolved at episode {i}: average reward: {running_reward:.2f}!')
 
 
-save_filename = "cart_model.keras"
+save_filename = "tetris_model.keras"
 model.save(save_filename)
 print(f"Saved model to {save_filename}")
 
@@ -328,10 +338,14 @@ print(f"Saved model to {save_filename}")
 from IPython import display as ipythondisplay
 from PIL import Image
 
-render_env = gym.make("CartPole-v1", render_mode='rgb_array')
+
+play_env = gym.make("ALE/Tetris-v5", render_mode = "rgb_array", obs_type="ram")
+# play_env = gym.make("ALE/Tetris-v5", obs_type="ram", repeat_action_probability=0, frameskip=999999)
+# render_env = gym.make("ALE/Tetris-v5", render_mode='rgb_array', repeat_action_probability=0, frameskip=999999)
 
 def render_episode(env: gym.Env, model: tf.keras.Model, max_steps: int):
   state, info = env.reset()
+  env.reset()
   state = tf.constant(state, dtype=tf.float32)
   screen = env.render()
   images = [Image.fromarray(screen)]
@@ -341,7 +355,7 @@ def render_episode(env: gym.Env, model: tf.keras.Model, max_steps: int):
     action_probs, _ = model(state)
     action = np.argmax(np.squeeze(action_probs))
 
-    state, reward, done, truncated, info = env.step(action)
+    state, reward, done, truncated, info = play_env.step(action)
     state = tf.constant(state, dtype=tf.float32)
 
     # Render screen every 10 steps
@@ -356,8 +370,8 @@ def render_episode(env: gym.Env, model: tf.keras.Model, max_steps: int):
 
 
 # Save GIF image
-images = render_episode(render_env, model, max_steps_per_episode)
-image_file = 'cartpole-v1.gif'
+images = render_episode(play_env, model, max_steps_per_episode)
+image_file = 'tetris-v1.gif'
 # loop=0: loop forever, duration=1: play each frame for 1ms
 images[0].save(
     image_file, save_all=True, append_images=images[1:], loop=0, duration=1)
