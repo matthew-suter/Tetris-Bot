@@ -33,7 +33,8 @@ eps = np.finfo(np.float32).eps.item()
 
 # %%
 
-class ActorCritic(tf.keras.Model):
+@tf.keras.utils.register_keras_serializable()
+class TetrisActorCritic(tf.keras.Model):
   """Combined actor-critic network."""
 
   def __init__(
@@ -52,26 +53,21 @@ class ActorCritic(tf.keras.Model):
     return self.actor(x), self.critic(x)
   
   def get_config(self):
-    base_config = super().get_config()
-    config = {}
-    # config = {
-    #     "sublayer": tf.keras.saving.serialize_keras_object(self.sublayer),
-    # }
-    return {**base_config, **config}
+    # Get the base configuration from the parent class
+    config = super().get_config()
+    # Add custom parameters to the config
+    config['num_actions'] = self.actor.units
+    config['num_hidden_units'] = self.common.units
+    return config
 
-  def get_config(self):
-    base_config = super().get_config()
-    config = {}
-    # config = {
-    #     "sublayer": tf.keras.saving.serialize_keras_object(self.sublayer),
-    # }
-    return {**base_config, **config}
+  # def get_config(self):
+  #   base_config = super().get_config()
+  #   config = {}
+  #   # config = {
+  #   #     "sublayer": tf.keras.saving.serialize_keras_object(self.sublayer),
+  #   # }
+  #   return {**base_config, **config}
 
-
-num_actions = env.action_space.n  # 2
-num_hidden_units = 128
-
-model = ActorCritic(num_actions, num_hidden_units)
 
 
 
@@ -281,52 +277,61 @@ def train_step(
 
 # %%time
 
+def train_model(model: TetrisActorCritic, save_filename):
+
+  # `CartPole-v1` is considered solved if average reward is >= 475 over 500
+  # consecutive trials
+  reward_threshold = 475
+  running_reward = 0
+
+  # The discount factor for future rewards
+  gamma = 0.99
+
+  # Keep the last episodes reward
+  episodes_reward: collections.deque = collections.deque(maxlen=min_episodes_criterion)
+
+  t = tqdm.trange(max_episodes)
+  for i in t:
+      initial_state, info = env.reset()
+      initial_state = tf.constant(initial_state, dtype=tf.float32)
+      episode_reward = int(train_step(
+          initial_state, model, optimizer, gamma, max_steps_per_episode))
+
+      episodes_reward.append(episode_reward)
+      running_reward = statistics.mean(episodes_reward)
+
+
+      t.set_postfix(
+          episode_reward=episode_reward, running_reward=running_reward)
+
+      # Show the average episode reward every 10 episodes
+      if i % 10 == 0:
+        pass # print(f'Episode {i}: average reward: {avg_reward}')
+
+      if running_reward > reward_threshold and i >= min_episodes_criterion:
+          break
+
+  print(f'\nSolved at episode {i}: average reward: {running_reward:.2f}!')
+
+  model.save(save_filename)
+  print(f"Saved model to {save_filename}")
+
+
 min_episodes_criterion = 100
 max_episodes = 10 #10000
 max_steps_per_episode = 500
 
-# `CartPole-v1` is considered solved if average reward is >= 475 over 500
-# consecutive trials
-reward_threshold = 475
-running_reward = 0
-
-# The discount factor for future rewards
-gamma = 0.99
-
-# Keep the last episodes reward
-episodes_reward: collections.deque = collections.deque(maxlen=min_episodes_criterion)
-
-t = tqdm.trange(max_episodes)
-for i in t:
-    initial_state, info = env.reset()
-    initial_state = tf.constant(initial_state, dtype=tf.float32)
-    episode_reward = int(train_step(
-        initial_state, model, optimizer, gamma, max_steps_per_episode))
-
-    episodes_reward.append(episode_reward)
-    running_reward = statistics.mean(episodes_reward)
-
-
-    t.set_postfix(
-        episode_reward=episode_reward, running_reward=running_reward)
-
-    # Show the average episode reward every 10 episodes
-    if i % 10 == 0:
-      pass # print(f'Episode {i}: average reward: {avg_reward}')
-
-    if running_reward > reward_threshold and i >= min_episodes_criterion:
-        break
-
-print(f'\nSolved at episode {i}: average reward: {running_reward:.2f}!')
-
-
 save_filename = "tetris_model.keras"
-model.save(save_filename)
-print(f"Saved model to {save_filename}")
 
-
-
-
+load_last_model = input("Use last model? (Y/n) ").lower() != "n"
+if load_last_model:
+  print("Loading model...")
+  model = tf.keras.models.load_model(save_filename)
+else:
+  num_actions = env.action_space.n  # 2
+  num_hidden_units = 128
+  model = TetrisActorCritic(num_actions, num_hidden_units)
+  train_model(model, save_filename)
 
 
 
