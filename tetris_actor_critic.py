@@ -15,9 +15,9 @@ from typing import Any, List, Sequence, Tuple
 env = gym.make("ALE/Tetris-v5", obs_type="ram")
 
 # Set seed for experiment reproducibility
-seed = 42
-tf.random.set_seed(seed)
-np.random.seed(seed)
+# seed = 42
+# tf.random.set_seed(seed)
+# np.random.seed(seed)
 
 # Small epsilon value for stabilizing division operations
 eps = np.finfo(np.float32).eps.item()
@@ -300,7 +300,7 @@ def train_model(model: TetrisActorCritic, save_filename):
       episodes_reward.append(episode_reward)
       running_reward = statistics.mean(episodes_reward)
 
-
+      # Update the progress bar in the command line
       t.set_postfix(
           episode_reward=episode_reward, running_reward=running_reward)
 
@@ -317,8 +317,8 @@ def train_model(model: TetrisActorCritic, save_filename):
   print(f"Saved model to {save_filename}\n")
 
 
-min_episodes_criterion = 100
-max_episodes = 1000 #10000
+min_episodes_criterion = 1000
+max_episodes = 10000 #10000
 max_steps_per_episode = 20000
 
 save_filename = "tetris_model.keras"
