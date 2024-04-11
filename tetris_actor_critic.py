@@ -64,15 +64,6 @@ class TetrisActorCritic(tf.keras.Model):
   #   return {**base_config, **config}
 
 
-
-
-
-
-
-
-
-
-
 # %%
 
 # Wrap Gym's `env.step` call as an operation in a TensorFlow function.
@@ -86,11 +77,6 @@ def env_step(action: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
   return (state.astype(np.float32),
           np.array(reward, np.int32),
           np.array(done, np.int32))
-
-
-
-
-
 
 
 # %%
@@ -141,13 +127,6 @@ def run_episode(
   return action_probs, values, rewards
 
 
-
-
-
-
-
-
-
 # %%
 def get_expected_return(
     rewards: tf.Tensor,
@@ -177,18 +156,6 @@ def get_expected_return(
   return returns
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # %%
 huber_loss = tf.keras.losses.Huber(reduction=tf.keras.losses.Reduction.SUM)
 
@@ -206,15 +173,6 @@ def compute_loss(
   critic_loss = huber_loss(values, returns)
 
   return actor_loss + critic_loss
-
-
-
-
-
-
-
-
-
 
 
 # %%
@@ -255,20 +213,6 @@ def train_step(
   episode_reward = tf.math.reduce_sum(rewards)
 
   return episode_reward
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # %%time
 
@@ -322,9 +266,6 @@ else:
   num_hidden_units = 128
   model = TetrisActorCritic(num_actions, num_hidden_units)
   train_model(model, save_filename)
-
-
-
 
 
 # %%
