@@ -9,6 +9,10 @@ from matplotlib import pyplot as plt
 from tensorflow.keras import layers
 from typing import Any, List, Sequence, Tuple
 
+#Hyperparmeters
+min_episodes_criterion = 1000
+max_episodes = 10 #10000
+max_steps_per_episode = 20000
 
 # Create the environment
 # env = gym.make("CartPole-v1")
@@ -21,15 +25,6 @@ env = gym.make("ALE/Tetris-v5", obs_type="ram")
 
 # Small epsilon value for stabilizing division operations
 eps = np.finfo(np.float32).eps.item()
-
-
-
-
-
-
-
-
-
 
 # %%
 
@@ -315,11 +310,6 @@ def train_model(model: TetrisActorCritic, save_filename):
 
   model.save(save_filename)
   print(f"Saved model to {save_filename}\n")
-
-
-min_episodes_criterion = 1000
-max_episodes = 10 #10000
-max_steps_per_episode = 20000
 
 save_filename = "tetris_model.keras"
 
