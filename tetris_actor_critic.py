@@ -314,12 +314,11 @@ def train_model(model: TetrisActorCritic, save_filename):
   print(f'\nSolved at episode {i}: average reward: {running_reward:.2f}!')
 
   model.save(save_filename)
-  #TODO: REMOVE THIS COMMENT
   print(f"Saved model to {save_filename}\n")
 
 
 min_episodes_criterion = 1000
-max_episodes = 100 #10000
+max_episodes = 10 #10000
 max_steps_per_episode = 20000
 
 save_filename = "tetris_model.keras"
