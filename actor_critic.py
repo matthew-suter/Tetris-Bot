@@ -50,6 +50,10 @@ class ActorCritic(tf.keras.Model):
     x = self.common(inputs)
     return self.actor(x), self.critic(x)
 
+num_actions = env.action_space.n  # 2
+num_hidden_units = 128
+
+model = ActorCritic(num_actions, num_hidden_units)
 
 
 
@@ -260,7 +264,7 @@ def train_step(
 # %%time
 
 min_episodes_criterion = 100
-max_episodes = 10000
+max_episodes = 1000 #10000
 max_steps_per_episode = 500
 
 # `CartPole-v1` is considered solved if average reward is >= 475 over 500
