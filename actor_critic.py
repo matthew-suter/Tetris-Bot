@@ -302,6 +302,9 @@ for i in t:
 print(f'\nSolved at episode {i}: average reward: {running_reward:.2f}!')
 
 
+save_filename = "cart_model.keras"
+model.save(save_filename)
+print(f"Saved model to {save_filename}")
 
 
 
