@@ -314,6 +314,7 @@ def train_model(model: TetrisActorCritic, save_filename):
   print(f'\nSolved at episode {i}: average reward: {running_reward:.2f}!')
 
   model.save(save_filename)
+  #TODO: REMOVE THIS COMMENT
   print(f"Saved model to {save_filename}\n")
 
 
