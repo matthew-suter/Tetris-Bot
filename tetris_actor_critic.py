@@ -11,11 +11,11 @@ from typing import Any, List, Sequence, Tuple
 
 #Hyperparmeters
 min_episodes_criterion = 1000
-max_episodes = 10 #10000
+max_episodes = 1000 #10000
 max_steps_per_episode = 20000
+learning_rate = 0.01
 
 # Create the environment
-# env = gym.make("CartPole-v1")
 env = gym.make("ALE/Tetris-v5", obs_type="ram")
 
 # Set seed for experiment reproducibility
@@ -176,7 +176,7 @@ def compute_loss(
 
 
 # %%
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
+optimizer = tf.keras.optimizers.Adam(learning_rate)
 
 
 @tf.function
@@ -220,7 +220,8 @@ def train_model(model: TetrisActorCritic, save_filename):
 
   # `CartPole-v1` is considered solved if average reward is >= 475 over 500
   # consecutive trials
-  reward_threshold = 475
+  # Fuck the threshold with a big ol number
+  reward_threshold = 47500000
   running_reward = 0
 
   # The discount factor for future rewards
