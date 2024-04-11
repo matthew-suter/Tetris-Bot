@@ -49,6 +49,14 @@ class ActorCritic(tf.keras.Model):
   def call(self, inputs: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
     x = self.common(inputs)
     return self.actor(x), self.critic(x)
+  
+  def get_config(self):
+    base_config = super().get_config()
+    config = {}
+    # config = {
+    #     "sublayer": tf.keras.saving.serialize_keras_object(self.sublayer),
+    # }
+    return {**base_config, **config}
 
 num_actions = env.action_space.n  # 2
 num_hidden_units = 128
