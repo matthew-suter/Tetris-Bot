@@ -11,7 +11,7 @@ from typing import Any, List, Sequence, Tuple
 
 #Hyperparmeters
 min_episodes_criterion = 1000
-max_episodes = 1000 #10000
+max_episodes = 100 #10000
 max_steps_per_episode = 20000
 learning_rate = 0.01
 
@@ -69,11 +69,27 @@ class TetrisActorCritic(tf.keras.Model):
 # Wrap Gym's `env.step` call as an operation in a TensorFlow function.
 # This would allow it to be included in a callable TensorFlow graph.
 
+def calculate_additional_reward(state, done):
+
+    if not done:
+        # Reward is 1 for each step the game continues
+        reward = 1
+    else:
+        # Significant penalty for losing the game.
+        reward = -10
+    # Implement the actual logic based on the game state
+    # Add rewards or penalties based on game state, e.g., line clearance, height, etc.
+    return reward
+
 @tf.numpy_function(Tout=[tf.float32, tf.int32, tf.int32])
 def env_step(action: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
   """Returns state, reward and done flag given an action."""
 
   state, reward, done, truncated, info = env.step(action)
+
+  additional_reward = calculate_additional_reward(state, done)
+  reward += additional_reward
+
   return (state.astype(np.float32),
           np.array(reward, np.int32),
           np.array(done, np.int32))
@@ -304,7 +320,6 @@ def render_episode(env: gym.Env, model: tf.keras.Model, max_steps: int):
       break
 
   return images
-
 
 # Save GIF image
 images = render_episode(play_env, model, max_steps_per_episode)
