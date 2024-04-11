@@ -318,7 +318,7 @@ def train_model(model: TetrisActorCritic, save_filename):
 
 
 min_episodes_criterion = 1000
-max_episodes = 10000 #10000
+max_episodes = 100 #10000
 max_steps_per_episode = 20000
 
 save_filename = "tetris_model.keras"
