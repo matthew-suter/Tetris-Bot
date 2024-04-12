@@ -52,4 +52,4 @@ def calculate_additional_reward(previous_grid, current_grid, done):
     # for i in range(current_grid.shape[1]-1):
     #     Bumpi_reward -= abs(sum(current_grid[:,i]) - sum(current_grid[:,i+1]))
 
-    return a*dony_reward + b*heighty_reward #+ c*liney_reward + e*Bumpi_reward
+    return a*dony_reward + b*heighty_reward + c*liney_reward + e*Bumpi_reward
