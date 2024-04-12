@@ -61,13 +61,6 @@ class TetrisActorCritic(tf.keras.Model):
     config['num_hidden_units'] = self.common.units
     return config
 
-  # def get_config(self):
-  #   base_config = super().get_config()
-  #   config = {}
-  #   # config = {
-  #   #     "sublayer": tf.keras.saving.serialize_keras_object(self.sublayer),
-  #   # }
-  #   return {**base_config, **config}
 
 
 # %%
