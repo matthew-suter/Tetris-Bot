@@ -61,13 +61,6 @@ class TetrisActorCritic(tf.keras.Model):
     config['num_hidden_units'] = self.common.units
     return config
 
-  # def get_config(self):
-  #   base_config = super().get_config()
-  #   config = {}
-  #   # config = {
-  #   #     "sublayer": tf.keras.saving.serialize_keras_object(self.sublayer),
-  #   # }
-  #   return {**base_config, **config}
 
 
 # %%
@@ -260,6 +253,7 @@ def train_model(model: TetrisActorCritic, save_filename):
 
   # The discount factor for future rewards
   gamma = 0.99
+  epsilon = gamma
 
   # Keep the last episodes reward
   episodes_reward: collections.deque = collections.deque(maxlen=min_episodes_criterion)
@@ -269,8 +263,9 @@ def train_model(model: TetrisActorCritic, save_filename):
       initial_state, info = env.reset()
       initial_state = tf.constant(initial_state, dtype=tf.float32)
 
-      #action = choose_action(initial_state, model, epsilon)
-      action = env.action_space.sample()
+      action = choose_action(initial_state, model, epsilon)
+      epsilon *= gamma
+      # action = env.action_space.sample()
       next_state, reward, done, truncated, info = env.step(action)
       next_state = tf.constant(next_state, dtype=tf.float32)
 
