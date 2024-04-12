@@ -2,6 +2,21 @@ import tensorflow as tf
 import numpy as np
 
 def calculate_additional_reward(previous_grid, current_grid, done):
+    reward = 0
+
+    # If a line is cleared, give a big bonus
+    current_count = tf.reduce_sum(current_grid)
+    prev_count    = tf.reduce_sum(previous_grid)
+    if current_count < prev_count and current_count != 0: # Don't reward the very first turn of every game
+        reward += 1000
+        print()
+    
+    return reward
+
+
+
+
+def old_calculate_additional_reward(previous_grid, current_grid, done):
     # there are 5 ways of getting a reward:
     # 1. not dying
     # 2. aggregate heigh

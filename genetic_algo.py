@@ -17,10 +17,14 @@ observation, info = env.reset()
 # Hyperparameters
 num_hidden_units = 50
 mutation_factor = 0.01
-num_actors = 10
-best_keep = 2 # Keep the best N actors to the next generation, kill the rest
 
-num_generations = 2
+# bonus_mutation_factor = 0.1
+# bonus_mutation_score_max = 1500
+
+num_actors = 50
+best_keep = 5 # Keep the best N actors to the next generation, kill the rest
+
+num_generations = 5
 
 image_frame_decimation = 5 # The steps between frames when saving as an image
 
@@ -79,16 +83,8 @@ def greyscale_to_one_hot(greyscale):
     return result
 
 
-# def state_to_numpy(state):
-#     """Convert a state tensor into a numpy array, suitable for saving"""
-#     out = state.numpy()
-#     out = np.reshape(out, [-1, 10])
-#     return out
-
-
 def training():
     assert num_actors % best_keep == 0, "An even proportion of the population must be saved!"
-
     actors = []
 
     for i in range(num_actors):
@@ -112,16 +108,7 @@ def training():
         for i in range(num_actors-best_keep):
             new_actors.append(tf.keras.models.clone_model(new_actors[i%best_keep]))
 
-        
-        
-        # Save a gif of the best actor
-        # print("Rendering preview of best actor...")
-        # best_idx = np.argmax(actor_scores)
-        # filepath = f"./genetic_previews/gen_{generation_num+1}_score_{actor_scores[best_idx]}_actor_{best_idx}"
-        # render_episode(actors[best_idx], filepath, 1000)
-
-
-        # Save and mutate
+        # Mutate the duplicated actors
         actors = new_actors
         for actor_idx in range(best_keep, len(actors)):
             actors[actor_idx].shuffle_weights(mutation_factor)
@@ -181,9 +168,10 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
 
 
         if verbose_printing:
-            print(f"Lasted {steps_survived} steps")
+            print(f"Lasted {steps_survived} steps, scored {steps_survived + cumulative_additional_score} points")
         
-        actor_scores[i] = steps_survived
+        # actor_scores[i] = steps_survived
+        actor_scores[i] = steps_survived + cumulative_additional_score
         # actor_scores[i] = cumulative_additional_score / (steps_survived**2) # Fancy heuristic score
     
     return actor_scores
