@@ -80,7 +80,7 @@ class TetrisActor(tf.keras.Model):
 def greyscale_to_one_hot(greyscale):
     result =  greyscale[28:204:8, 24:64:4] # Trim to only include the playspace, shifting one pixel down and left to avoid inter-block gaps, and then downscale
     result = (result != 0x6F)*1 # Check if background colour (Hex code 0x6F), and convert to numerical boolean using disgusting typecasting
-    result = tf.reshape(result, [1, -1])
+    # result = tf.reshape(result, [1, -1])
     return result
 
 
@@ -151,7 +151,7 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
         while not (done or truncated):
             last_state = state
             state = greyscale_to_one_hot(greyscale)
-            action = actor.call(state)
+            action = actor.call(tf.reshape(state, [1, -1]))
 
             # print(actor.summary())
             action = int(tf.argmax(action, axis=1))
