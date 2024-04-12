@@ -138,6 +138,44 @@ training()
 
 
 
+# # play_env = gym.make("ALE/Tetris-v5", obs_type="ram", repeat_action_probability=0, frameskip=999999)
+# # render_env = gym.make("ALE/Tetris-v5", render_mode='rgb_array', repeat_action_probability=0, frameskip=999999)
+
+# def render_episode(env: gym.Env, model: tf.keras.Model, max_steps: int):
+#     play_env = gym.make("ALE/Tetris-v5", render_mode = "rgb_array", obs_type="ram")
+#     state, info = env.reset()
+#     env.reset()
+#     state = tf.constant(state, dtype=tf.float32)
+#     screen = env.render()
+#     images = [Image.fromarray(screen)]
+
+#     for i in range(1, max_steps + 1):
+#         state = tf.expand_dims(state, 0)
+#         action_probs, _ = model(state)
+#         action = np.argmax(np.squeeze(action_probs))
+
+#         state, reward, done, truncated, info = play_env.step(action)
+#         state = tf.constant(state, dtype=tf.float32)
+
+#         # Render screen every 10 steps
+#         if i % 10 == 0:
+#             screen = env.render()
+#             images.append(Image.fromarray(screen))
+
+#         if done:
+#             break
+
+#     return images
+
+# # Save GIF image
+# images = render_episode(play_env, model, max_steps_per_episode)
+# image_file = 'tetris-v2.gif'
+# # loop=0: loop forever, duration=1: play each frame for 1ms
+# images[0].save(
+#     image_file, save_all=True, append_images=images[1:], loop=0, duration=1)
+
+
+
 
 
 
