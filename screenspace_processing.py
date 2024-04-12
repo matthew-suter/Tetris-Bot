@@ -15,18 +15,17 @@ def greyscale_to_one_hot(greyscale):
 
 for _ in range(1000):
     action = env.action_space.sample()  # agent policy that uses the observation and info
-    print(action)
     observation, reward, terminated, truncated, info = env.step(action)
 
     trimmed_obs = greyscale_to_one_hot(observation)
 
-    # for row in range(trimmed_obs.shape[0]):
-    #     for col in range(trimmed_obs.shape[1]):
-    #         print(trimmed_obs[row, col], end="")
-    #     print()
+    for row in range(trimmed_obs.shape[0]):
+        for col in range(trimmed_obs.shape[1]):
+            print(trimmed_obs[row, col], end="")
+        print()
 
-    # # input() # Enter to advance timesteps
-    # print()
+    # input() # Enter to advance timesteps
+    print()
 
     if terminated or truncated:
         observation, info = env.reset()
