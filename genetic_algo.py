@@ -22,6 +22,8 @@ best_keep = 2 # Keep the best N actors to the next generation, kill the rest
 
 num_generations = 2
 
+image_frame_decimation = 5 # The steps between frames when saving as an image
+
 @tf.keras.utils.register_keras_serializable()
 class TetrisActor(tf.keras.Model):
     """GA_Suitable Actor"""
@@ -77,6 +79,12 @@ def greyscale_to_one_hot(greyscale):
     return result
 
 
+# def state_to_numpy(state):
+#     """Convert a state tensor into a numpy array, suitable for saving"""
+#     out = state.numpy()
+#     out = np.reshape(out, [-1, 10])
+#     return out
+
 
 def training():
     assert num_actors % best_keep == 0, "An even proportion of the population must be saved!"
@@ -90,7 +98,7 @@ def training():
         print(f"Generation {generation_num+1}")
 
         # Test all of the actors
-        filepath = f"./genetic_previews/gen_{generation_num+1}"
+        filepath = f"genetic_previews/gen_{generation_num+1}.gif"
         actor_scores = trial_actors(actors, verbose_printing=True, render_game=True, render_filename=filepath)
         print(np.sort(actor_scores))
 
@@ -120,11 +128,20 @@ def training():
 
 
 
-def trial_actors(actors, verbose_printing=False, render_game=False, render_filename=""):
+def trial_actors(actors, verbose_printing=False, render_game=False, render_filename="Tetris_Game"):
+    """
+    Trials all actors in a supplied list
+
+    Arguments:
+        actors: list of TetrisActor layers
+        verbose_printing: print verbosely
+        render_game: Save a .gif of the first actor's playthrough
+        render_filename: The path the gif is saved to
+    """
     actor_scores = np.zeros(len(actors))
 
-    if render_game and render_filename == "":
-        render_filename = "Tetris_game.gif"
+    if render_game and not render_filename.endswith(".gif"):
+        render_filename += ".gif"
 
     for i, actor in enumerate(actors):
         # Game start
@@ -141,8 +158,7 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
 
         # Rendering init
         if render_game and i==0:
-            print(state)
-            images = [Image.fromarray(tf.make_ndarray(state))]
+            images = [Image.fromarray(greyscale)]
 
         while not (done or truncated):
             last_state = state
@@ -156,8 +172,8 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
             cumulative_additional_score += additional_reward.calculate_additional_reward(last_state, state, False)
         
             # Render screen every 10 steps
-            if render_game and i==0 and (steps_survived % 10 == 0):
-                images.append(Image.fromarray(tf.make_ndarray(state)))
+            if render_game and i==0 and (steps_survived % image_frame_decimation == 0):
+                images.append(Image.fromarray(greyscale))
         
         if render_game:
             # loop=0: loop forever, duration=1: play each frame for 1ms
