@@ -18,8 +18,9 @@ observation, info = env.reset()
 num_hidden_units = 50
 mutation_factor = 0.01
 
-# bonus_mutation_factor = 0.1
-# bonus_mutation_score_max = 1500
+# TODO: Implement these!
+bonus_mutation_factor = 0.1
+bonus_mutation_score_max = 1500
 
 num_actors = 50
 best_keep = 5 # Keep the best N actors to the next generation, kill the rest
