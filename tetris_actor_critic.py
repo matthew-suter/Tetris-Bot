@@ -253,6 +253,7 @@ def train_model(model: TetrisActorCritic, save_filename):
 
   # The discount factor for future rewards
   gamma = 0.99
+  epsilon = gamma
 
   # Keep the last episodes reward
   episodes_reward: collections.deque = collections.deque(maxlen=min_episodes_criterion)
@@ -262,8 +263,9 @@ def train_model(model: TetrisActorCritic, save_filename):
       initial_state, info = env.reset()
       initial_state = tf.constant(initial_state, dtype=tf.float32)
 
-      #action = choose_action(initial_state, model, epsilon)
-      action = env.action_space.sample()
+      action = choose_action(initial_state, model, epsilon)
+      epsilon *= gamma
+      # action = env.action_space.sample()
       next_state, reward, done, truncated, info = env.step(action)
       next_state = tf.constant(next_state, dtype=tf.float32)
 

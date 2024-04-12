@@ -10,6 +10,7 @@ def greyscale_to_one_hot(greyscale):
     return result
 
 
+# def scored_this_turn()
 
 
 for _ in range(1000):
