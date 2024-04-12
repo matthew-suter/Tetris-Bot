@@ -33,7 +33,7 @@ for i in range(1000):
     print()
 
     if i != 0:
-        print(f"Score: {additional_reward.calculate_additional_reward(last_trimmed_obs, trimmed_obs, False)}")
+        print(f"Current state's score: {additional_reward.calculate_additional_reward(last_trimmed_obs, trimmed_obs, False)}\n")
 
     if terminated or truncated:
         observation, info = env.reset()

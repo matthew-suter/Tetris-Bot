@@ -3,6 +3,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers
 
+import additional_reward
+
 env = gym.make("ALE/Tetris-v5", obs_type="grayscale")
 observation, info = env.reset()
 
@@ -109,12 +111,15 @@ def trial_actors(actors, verbose_printing=False):
         if verbose_printing:
             print(f"Training actor #{i+1}... ", end="")
         greyscale, info = env.reset()
+        state = greyscale_to_one_hot(greyscale)
 
         done = False
         truncated = False
         steps_survived = 0
+        cumulative_additional_score = 0
 
         while not (done or truncated):
+            last_state = state
             state = greyscale_to_one_hot(greyscale)
             action = actor.call(state)
 
@@ -122,10 +127,11 @@ def trial_actors(actors, verbose_printing=False):
             action = int(tf.argmax(action, axis=1))
             greyscale, reward, done, truncated, info = env.step(action)
             steps_survived += 1
+            cumulative_additional_score += additional_reward.calculate_additional_reward(last_state, state, False)
         
         if verbose_printing:
             print(f"Lasted {steps_survived} steps")
-        actor_scores[i] = steps_survived
+        actor_scores[i] = cumulative_additional_score / (steps_survived**2)
     
     return actor_scores
 

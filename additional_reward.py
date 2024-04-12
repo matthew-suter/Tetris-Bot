@@ -30,8 +30,8 @@ def calculate_additional_reward(previous_grid, current_grid, done):
     # Add rewards or penalties based on game state, e.g., line clearance, height, etc.
 
     # Aggregate height
-    current_height = max([sum(current_grid[:,i]) for i in range(current_grid.shape[1])])
-    previous_height = max([sum(previous_grid[:,i]) for i in range(previous_grid.shape[1])])
+    current_height = np.max(tf.reduce_sum(current_grid, axis=0))
+    previous_height = np.max(tf.reduce_sum(previous_grid, axis=0))
     if current_height > previous_height:
         heighty_reward -= 1
     
@@ -41,15 +41,15 @@ def calculate_additional_reward(previous_grid, current_grid, done):
 
     # Holes
     #copilot code, likely gonna break, or eat be O(n^5000)
-    for i in range(current_grid.shape[1]):
-        for j in range(current_grid.shape[0]):
-            if current_grid[j,i] == 1 and previous_grid[j,i] == 0:
-                for k in range(j+1, current_grid.shape[0]):
-                    if current_grid[k,i] == 0:
-                        holey_reward -= 1
+    # for i in range(current_grid.shape[1]):
+    #     for j in range(current_grid.shape[0]):
+    #         if current_grid[j,i] == 1 and previous_grid[j,i] == 0:
+    #             for k in range(j+1, current_grid.shape[0]):
+    #                 if current_grid[k,i] == 0:
+    #                     holey_reward -= 1
 
     # Bumpiness
-    for i in range(current_grid.shape[1]-1):
-        Bumpi_reward -= abs(sum(current_grid[:,i]) - sum(current_grid[:,i+1]))
+    # for i in range(current_grid.shape[1]-1):
+    #     Bumpi_reward -= abs(sum(current_grid[:,i]) - sum(current_grid[:,i+1]))
 
-    return a*dony_reward + b*heighty_reward + c*liney_reward + d*holey_reward + e*Bumpi_reward
+    return a*dony_reward + b*heighty_reward #+ c*liney_reward + e*Bumpi_reward
