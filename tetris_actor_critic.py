@@ -22,7 +22,7 @@ epsilon_min = 0.01  # Minimum value of epsilon
 epsilon_decay = 0.995  # Decay rate for epsilon
 
 # Create the environment
-env = gym.make("ALE/Tetris-v5", obs_type="ram")
+env = gym.make("ALE/Tetris-v5", obs_type="grayscale")
 
 # Set seed for experiment reproducibility
 # seed = 42
