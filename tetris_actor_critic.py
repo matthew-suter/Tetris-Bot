@@ -11,9 +11,15 @@ from typing import Any, List, Sequence, Tuple
 
 #Hyperparmeters
 min_episodes_criterion = 1000
-max_episodes = 100 #10000
+max_episodes = 10 #10000
 max_steps_per_episode = 20000
 learning_rate = 0.01
+
+# Epsilon-Greedy Hyperparameters
+#These adjust the random behavior of the AI, allowing it to explore more
+epsilon = 1.0  # Initial epsilon value
+epsilon_min = 0.01  # Minimum value of epsilon
+epsilon_decay = 0.995  # Decay rate for epsilon
 
 # Create the environment
 env = gym.make("ALE/Tetris-v5", obs_type="ram")
@@ -76,7 +82,7 @@ def calculate_additional_reward(state, done):
         reward = 1
     else:
         # Significant penalty for losing the game.
-        reward = -10
+        reward = -100
     # Implement the actual logic based on the game state
     # Add rewards or penalties based on game state, e.g., line clearance, height, etc.
     return reward
@@ -117,6 +123,7 @@ def run_episode(
     action_logits_t, value = model(state)
 
     # Sample next action from the action probability distribution
+    #action = env.action_space.sample()
     action = tf.random.categorical(action_logits_t, 1)[0, 0]
     action_probs_t = tf.nn.softmax(action_logits_t)
 
@@ -139,6 +146,8 @@ def run_episode(
   action_probs = action_probs.stack()
   values = values.stack()
   rewards = rewards.stack()
+
+  print(action_probs, values, rewards)
 
   return action_probs, values, rewards
 
@@ -181,6 +190,10 @@ def compute_loss(
     returns: tf.Tensor) -> tf.Tensor:
   """Computes the combined Actor-Critic loss."""
 
+  #entropy should encorage the AI to act randomly, allowing it to explore more.
+  entropy = tf.reduce_sum(-action_probs * tf.math.log(action_probs + 1e-9), axis=1)
+
+
   advantage = returns - values
 
   action_log_probs = tf.math.log(action_probs)
@@ -188,7 +201,7 @@ def compute_loss(
 
   critic_loss = huber_loss(values, returns)
 
-  return actor_loss + critic_loss
+  return actor_loss + critic_loss - 0.01 * entropy
 
 
 # %%
@@ -232,12 +245,17 @@ def train_step(
 
 # %%time
 
+def choose_action(state, model, epsilon):
+  #This selects what action to take, either randomly or based on the model's prediction
+    if np.random.rand() <= epsilon:
+        return env.action_space.sample()  # Choose a random action
+    else:
+        q_values = model(state)  # Assuming model(state) directly gives Q-values
+        return np.argmax(q_values)  # Choose the best action based on the model's prediction
+
+
 def train_model(model: TetrisActorCritic, save_filename):
 
-  # `CartPole-v1` is considered solved if average reward is >= 475 over 500
-  # consecutive trials
-  # Fuck the threshold with a big ol number
-  reward_threshold = 47500000
   running_reward = 0
 
   # The discount factor for future rewards
@@ -250,10 +268,18 @@ def train_model(model: TetrisActorCritic, save_filename):
   for i in t:
       initial_state, info = env.reset()
       initial_state = tf.constant(initial_state, dtype=tf.float32)
+
+      #action = choose_action(initial_state, model, epsilon)
+      action = env.action_space.sample()
+      next_state, reward, done, truncated, info = env.step(action)
+      next_state = tf.constant(next_state, dtype=tf.float32)
+
+
       episode_reward = int(train_step(
           initial_state, model, optimizer, gamma, max_steps_per_episode))
 
       episodes_reward.append(episode_reward)
+      initial_state = next_state
       running_reward = statistics.mean(episodes_reward)
 
       # Update the progress bar in the command line
@@ -263,9 +289,6 @@ def train_model(model: TetrisActorCritic, save_filename):
       # Show the average episode reward every 10 episodes
       if i % 10 == 0:
         pass # print(f'Episode {i}: average reward: {avg_reward}')
-
-      if running_reward > reward_threshold and i >= min_episodes_criterion:
-          break
 
   print(f'\nSolved at episode {i}: average reward: {running_reward:.2f}!')
 
@@ -323,7 +346,7 @@ def render_episode(env: gym.Env, model: tf.keras.Model, max_steps: int):
 
 # Save GIF image
 images = render_episode(play_env, model, max_steps_per_episode)
-image_file = 'tetris-v1.gif'
+image_file = 'tetris-v2.gif'
 # loop=0: loop forever, duration=1: play each frame for 1ms
 images[0].save(
     image_file, save_all=True, append_images=images[1:], loop=0, duration=1)
