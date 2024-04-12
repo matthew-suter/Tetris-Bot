@@ -9,7 +9,7 @@ observation, info = env.reset()
 # Hyperparameters
 num_hidden_units = 50
 mutation_factor = 0.01
-num_actors = 10
+num_actors = 50
 best_keep = 5 # Keep the best N actors to the next generation, kill the rest
 
 num_generations = 5
@@ -71,25 +71,34 @@ def greyscale_to_one_hot(greyscale):
 
 
 def training():
+    assert num_actors % best_keep == 0, "An even proportion of the population must be saved!"
+
     actors = []
 
     for i in range(num_actors):
         actors.append(TetrisActor(num_actions=env.action_space.n, num_hidden_units=num_hidden_units))
 
-    for i in range(num_generations):
-        print(f"Generation {i+1}")
+    for generation_num in range(num_generations):
+        print(f"Generation {generation_num+1}")
 
         # Test all of the actors
         actor_scores = trial_actors(actors, verbose_printing=True)
-        print(actor_scores)
+        print(np.sort(actor_scores))
 
         # Take the best N actors
         new_actors = []
         best_actors_idx = np.argpartition(actor_scores, -best_keep)[-best_keep:]
-        print(best_actors_idx)
+        # print(f"Best actor indices: {best_actors_idx}")
+        for idx in best_actors_idx:
+            new_actors.append(actors[idx])
+        
+        for i in range(num_actors-best_keep):
+            new_actors.append(tf.keras.models.clone_model(new_actors[i%best_keep]))
 
-        for actor in actors:
-            actor.shuffle_weights(mutation_factor)
+        actors = new_actors
+
+        for actor_idx in range(best_keep, len(actors)):
+            actors[actor_idx].shuffle_weights(mutation_factor)
 
 
 
