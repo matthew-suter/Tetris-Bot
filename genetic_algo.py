@@ -105,8 +105,8 @@ class TetrisActor(tf.keras.Model):
         return config
     
 
-    def inherit_genes(self, model_1: TetrisActor, model_2: TetrisActor):
-        pass
+    # def inherit_genes(self, model_1: TetrisActor, model_2: TetrisActor):
+    #     pass
 
 
 def greyscale_to_one_hot(greyscale):
@@ -128,7 +128,7 @@ def training():
 
         # Test all of the actors
         filepath = f"genetic_previews/gen_{generation_num+1}.gif"
-        actor_scores = trial_actors(actors, verbose_printing=True, render_game=True, render_filename=filepath)
+        actor_scores = trial_actors(actors, verbose_printing=True, render_game=True, render_filename=filepath, generation=generation_num)
         print(np.sort(actor_scores))
 
         # Take the best N actors
@@ -156,7 +156,7 @@ def training():
 
 
 
-def trial_actors(actors, verbose_printing=False, render_game=False, render_filename="Tetris_Game"):
+def trial_actors(actors, verbose_printing=False, render_game=False, render_filename="Tetris_Game", generation=0):
     """
     Trials all actors in a supplied list
 
@@ -198,8 +198,8 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
         cumulative_score = 0
 
         # Rendering init
-        if render_game and i==0:
-            images = [Image.fromarray(greyscale)]
+        # if render_game and i==0:
+        images = [Image.fromarray(greyscale)]
 
         while not (done or truncated):
             last_state = state
@@ -227,12 +227,12 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
             cumulative_score += additional_reward.calculate_additional_reward(last_state, state, False)
         
             # Render screen every 10 steps
-            if render_game and i==0 and (steps_survived % image_frame_decimation == 0):
+            if render_game and (steps_survived % image_frame_decimation == 0):
                 images.append(Image.fromarray(greyscale))
         
         if render_game:
             # loop=0: loop forever, duration=1: play each frame for 1ms
-            images[0].save(render_filename, save_all=True, append_images=images[1:], loop=0, duration=1)
+            images[0].save(f"genetic_previews/{cumulative_score:06}_gen_{generation}_actor_{i}.gif", save_all=True, append_images=images[1:], loop=0, duration=1)
 
 
         if verbose_printing:
