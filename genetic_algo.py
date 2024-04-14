@@ -43,12 +43,12 @@ class TetrisActor(tf.keras.Model):
         super().__init__()
 
         self.dense1 = layers.Dense(num_hidden_units, activation="relu")
-        self.dense2 = layers.Dense(num_actions)
+        self.output_layer = layers.Dense(num_actions)
 
 
     def call(self, inputs: tf.Tensor) -> tf.Tensor:
         x = self.dense1(inputs)
-        return self.dense2(x)
+        return self.output_layer(x)
 
 
     def shuffle_weights(self, shuffle_factor=0.01):
@@ -57,9 +57,9 @@ class TetrisActor(tf.keras.Model):
         self._shuffle_layer_weights(dense1_weights, shuffle_factor)
         self.dense1.set_weights(dense1_weights)
 
-        dense2_weights = self.dense2.get_weights()
-        self._shuffle_layer_weights(dense2_weights, shuffle_factor)
-        self.dense2.set_weights(dense2_weights)
+        output_weights = self.output_layer.get_weights()
+        self._shuffle_layer_weights(output_weights, shuffle_factor)
+        self.output_layer.set_weights(output_weights)
 
 
     def _shuffle_layer_weights(self, layer_weights, shuffle_factor):
@@ -74,7 +74,7 @@ class TetrisActor(tf.keras.Model):
         # Get the base configuration from the parent class
         config = super().get_config()
         # Add custom parameters to the config
-        config['num_actions'] = self.dense2.units
+        config['num_actions'] = self.output_layer.units
         config['num_hidden_units'] = self.dense1.units
         return config
 

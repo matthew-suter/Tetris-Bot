@@ -14,7 +14,7 @@ def calculate_additional_reward(previous_grid, current_grid, done):
     # Penalty for leaving a big difference between the tallest and shortest columns
     col_fills = np.sum(current_grid, axis=0)
     col_fill_factor = np.max(col_fills) - np.min(col_fills)
-    reward -= col_fill_factor//5
+    reward -= col_fill_factor//2
     
     # TODO: Add a reward for pressing the down key, to offset the lost reward from shortening the game
 
