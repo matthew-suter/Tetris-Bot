@@ -25,7 +25,7 @@ bonus_mutation_factor = 0.1
 bonus_mutation_score_max = 1500
 
 num_actors = 10
-best_keep = 4 # Keep the best N actors to the next generation, kill the rest
+best_keep = 2 # Keep the best N actors to the next generation, kill the rest
 
 num_generations = 5
 
@@ -61,9 +61,9 @@ class TetrisActor(tf.keras.Model):
         self._shuffle_layer_weights(dense1_weights, shuffle_factor)
         self.dense1.set_weights(dense1_weights)
 
-        output_weights = self.output_layer.get_weights()
-        self._shuffle_layer_weights(output_weights, shuffle_factor)
-        self.output_layer.set_weights(output_weights)
+        dense2_weights = self.dense2.get_weights()
+        self._shuffle_layer_weights(dense2_weights, shuffle_factor)
+        self.dense2.set_weights(dense2_weights)
 
         dense3_weights = self.dense3.get_weights()
         self._shuffle_layer_weights(dense3_weights, shuffle_factor)
@@ -80,7 +80,6 @@ class TetrisActor(tf.keras.Model):
             scale_factor = tf.random.uniform(layer_weights[i].shape, minval=1-shuffle_factor, maxval=1+shuffle_factor)
             scaled = layer_weights[i] * scale_factor
             layer_weights[i] = scaled
-        print(len(layer_weights))
 
 
     def get_config(self):
