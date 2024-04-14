@@ -22,7 +22,7 @@ mutation_factor = 0.01
 bonus_mutation_factor = 0.1
 bonus_mutation_score_max = 1500
 
-num_actors = 50
+num_actors = 10
 best_keep = 5 # Keep the best N actors to the next generation, kill the rest
 
 num_generations = 5
