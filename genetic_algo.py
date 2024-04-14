@@ -26,16 +26,16 @@ num_hidden_units = 400
 mutation_factor = 0.01
 
 ## Make mutation stronger if the models do poorly
-bonus_mutation_score_max = 20000  # If score is less than this, apply stronger mutation
-bonus_mutation_shift_factor = 2   # Std. Dev. of weights shifting
-bonus_mutation_scale_factor = 0.2 # Increased Scale factor 
+bonus_mutation_score_max = 20000    # If score is less than this, apply stronger mutation
+bonus_mutation_shift_factor = 2     # Std. Dev. of weights shifting
+bonus_mutation_scale_factor = 0.2   # Increased Scale factor 
 
-num_actors = 50 # Number of actors to use
-best_keep = 5   # Keep the best N actors to the next generation, kill the rest
+num_actors = 50                     # Number of actors to use
+best_keep = 5                       # Keep the best N actors to the next generation, kill the rest
 
 num_generations = 5
 
-image_frame_decimation = 5 # The steps between frames when saving as an image
+image_frame_decimation = 5          # The steps between frames when saving as an image
 
 @tf.keras.utils.register_keras_serializable()
 class TetrisActor(tf.keras.Model):
