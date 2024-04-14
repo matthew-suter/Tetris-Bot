@@ -30,10 +30,10 @@ bonus_mutation_score_max = 1        # If score is less than this, apply stronger
 bonus_mutation_shift_factor = 2     # Std. Dev. of weights shifting
 bonus_mutation_scale_factor = 0.2   # Increased Scale factor 
 
-num_actors = 50                     # Number of actors to use
-best_keep = 5                       # Keep the best N actors to the next generation, kill the rest
+num_actors = 100                    # Number of actors to use
+best_keep = 10                      # Keep the best N actors to the next generation, kill the rest
 
-num_generations = 5
+num_generations = 50
 
 image_frame_decimation = 5          # The steps between frames when saving as an image
 
