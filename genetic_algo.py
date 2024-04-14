@@ -171,45 +171,9 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
         if verbose_printing:
             print(f"Lasted {steps_survived} steps, scored {cumulative_score} points")
         
-        # actor_scores[i] = steps_survived
         actor_scores[i] = cumulative_score
-        # actor_scores[i] = cumulative_additional_score / (steps_survived**2) # Fancy heuristic score
     
     return actor_scores
-
-
-
-# def render_episode(actor: TetrisActor, filename: str, max_steps: int=-1):
-#     greyscale, info = render_env.reset()
-#     state = greyscale_to_one_hot(greyscale)
-
-#     done = False
-#     truncated = False
-#     step_limit_reached = False
-#     steps_survived = 0
-
-#     screen = render_env.render()
-#     images = [Image.fromarray(screen)]
-
-#     while not (done or truncated or step_limit_reached):
-#         last_state = state
-#         state = greyscale_to_one_hot(greyscale)
-#         action = actor.call(state)
-
-#         # print(actor.summary())
-#         action = int(tf.argmax(action, axis=1))
-#         greyscale, reward, done, truncated, info = render_env.step(action)
-#         steps_survived += 1
-#         step_limit_reached = steps_survived > max_steps and steps_survived != -1
-
-#         # Render screen every 10 steps
-#         if steps_survived % 10 == 0:
-#             screen = render_env.render()
-#             images.append(Image.fromarray(screen))
-    
-#     # loop=0: loop forever, duration=1: play each frame for 1ms
-#     images[0].save(
-#         filename, save_all=True, append_images=images[1:], loop=0, duration=1)
 
 
 
