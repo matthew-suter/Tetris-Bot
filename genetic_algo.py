@@ -13,7 +13,7 @@ import additional_reward
 import time
 
 # FIXME: Removed all randomness from the gym to allow for better/over fitting
-env = gym.make("ALE/Tetris-v5", obs_type="grayscale", repeat_action_probability=0, frameskip=99999999999999999)
+env = gym.make("ALE/Tetris-v5", obs_type="grayscale", repeat_action_probability=0)
 
 # render_env = gym.make("ALE/Tetris-v5", obs_type="grayscale", render_mode="human")
 observation, info = env.reset()
@@ -30,8 +30,8 @@ bonus_mutation_score_max = 20000  # If score is less than this, apply stronger m
 bonus_mutation_shift_factor = 2   # Std. Dev. of weights shifting
 bonus_mutation_scale_factor = 0.2 # Increased Scale factor 
 
-num_actors = 10
-best_keep = 2 # Keep the best N actors to the next generation, kill the rest
+num_actors = 50 # Number of actors to use
+best_keep = 5   # Keep the best N actors to the next generation, kill the rest
 
 num_generations = 5
 
