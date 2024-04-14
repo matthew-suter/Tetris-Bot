@@ -103,6 +103,10 @@ class TetrisActor(tf.keras.Model):
         config['num_actions'] = self.dense_output.units
         config['num_hidden_units'] = self.dense1.units
         return config
+    
+
+    def inherit_genes(self, model_1: TetrisActor, model_2: TetrisActor):
+        pass
 
 
 def greyscale_to_one_hot(greyscale):
