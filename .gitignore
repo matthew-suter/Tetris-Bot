@@ -1,7 +1,8 @@
 # Saved keras models
 *.keras
 
-
+# Model renders
+*.gif
 
 
 
