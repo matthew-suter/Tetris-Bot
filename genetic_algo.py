@@ -12,7 +12,9 @@ import additional_reward
 
 import time
 
-env = gym.make("ALE/Tetris-v5", obs_type="grayscale")
+# FIXME: Removed all randomness from the gym to allow for better/over fitting
+env = gym.make("ALE/Tetris-v5", obs_type="grayscale", repeat_action_probability=0, frameskip=99999999999999999)
+
 # render_env = gym.make("ALE/Tetris-v5", obs_type="grayscale", render_mode="human")
 observation, info = env.reset()
 
