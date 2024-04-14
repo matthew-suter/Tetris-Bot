@@ -142,7 +142,7 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
         done = False
         truncated = False
         steps_survived = 0
-        cumulative_additional_score = 0
+        cumulative_score = 0
 
         # Rendering init
         if render_game and i==0:
@@ -157,7 +157,7 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
             action = int(tf.argmax(action, axis=1))
             greyscale, reward, done, truncated, info = env.step(action)
             steps_survived += 1
-            cumulative_additional_score += additional_reward.calculate_additional_reward(last_state, state, False)
+            cumulative_score += additional_reward.calculate_additional_reward(last_state, state, False)
         
             # Render screen every 10 steps
             if render_game and i==0 and (steps_survived % image_frame_decimation == 0):
@@ -169,10 +169,10 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
 
 
         if verbose_printing:
-            print(f"Lasted {steps_survived} steps, scored {steps_survived + cumulative_additional_score} points")
+            print(f"Lasted {steps_survived} steps, scored {cumulative_score} points")
         
         # actor_scores[i] = steps_survived
-        actor_scores[i] = steps_survived + cumulative_additional_score
+        actor_scores[i] = cumulative_score
         # actor_scores[i] = cumulative_additional_score / (steps_survived**2) # Fancy heuristic score
     
     return actor_scores
