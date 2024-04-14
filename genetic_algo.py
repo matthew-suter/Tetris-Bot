@@ -17,12 +17,16 @@ env = gym.make("ALE/Tetris-v5", obs_type="grayscale")
 observation, info = env.reset()
 
 # Hyperparameters
+## Layer Sizes
 num_hidden_units = 400
+
+## Regular mutation
 mutation_factor = 0.01
 
-# TODO: Implement these!
-bonus_mutation_factor = 0.1
-bonus_mutation_score_max = 1500
+## Make mutation stronger if the models do poorly
+bonus_mutation_shift_factor = 2   # Std. Dev. of weights shifting
+bonus_mutation_scale_factor = 0.2 # Increased Scale factor 
+bonus_mutation_score_max = 20000
 
 num_actors = 10
 best_keep = 2 # Keep the best N actors to the next generation, kill the rest
@@ -51,22 +55,30 @@ class TetrisActor(tf.keras.Model):
         return self.output_layer(x)
 
 
-    def shuffle_weights(self, shuffle_factor=0.01):
+    def shuffle_weights(self, shuffle_factor=0.01, fixed_shift=0):
         """Shuffles the values of all layers' weights"""
         dense1_weights = self.dense1.get_weights()
-        self._shuffle_layer_weights(dense1_weights, shuffle_factor)
+        self._shuffle_layer_weights(dense1_weights, shuffle_factor, fixed_shift)
         self.dense1.set_weights(dense1_weights)
 
         output_weights = self.output_layer.get_weights()
-        self._shuffle_layer_weights(output_weights, shuffle_factor)
+        self._shuffle_layer_weights(output_weights, shuffle_factor, fixed_shift)
         self.output_layer.set_weights(output_weights)
 
 
-    def _shuffle_layer_weights(self, layer_weights, shuffle_factor):
-        """Layer weights are a python list of numpy arrays. Gross, this scales each value by a random factor"""
+    def _shuffle_layer_weights(self, layer_weights, shuffle_factor, fixed_shift=0):
+        """Layer weights are a python list of numpy arrays. Gross, this scales each value by a random factor
+        shuffle_factor is the amount it will scale the weights by
+
+        fixed_shift is the standard deviation it will shift all weights by. Set to 0 to disable
+        """
         for i in range(len(layer_weights)):
             scale_factor = tf.random.uniform(layer_weights[i].shape, minval=1-shuffle_factor, maxval=1+shuffle_factor)
             scaled = layer_weights[i] * scale_factor
+
+            if fixed_shift != 0:
+                scaled += np.random.normal(loc=0, scale=fixed_shift, size=scaled.shape)
+
             layer_weights[i] = scaled
 
 
@@ -114,7 +126,15 @@ def training():
         # Mutate the duplicated actors
         actors = new_actors
         for actor_idx in range(best_keep, len(actors)):
-            actors[actor_idx].shuffle_weights(mutation_factor)
+            # If score was too low, clobber it hard!
+            if actor_scores[i%best_keep] < bonus_mutation_score_max:
+                shift_amount = bonus_mutation_shift_factor
+                mutation_factor_local = bonus_mutation_scale_factor
+            else:
+                shift_amount = 0
+                mutation_factor_local = mutation_factor
+            
+            actors[actor_idx].shuffle_weights(mutation_factor_local, shift_amount)
 
 
 
