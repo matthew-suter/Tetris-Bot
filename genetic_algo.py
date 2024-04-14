@@ -24,9 +24,9 @@ num_hidden_units = 400
 mutation_factor = 0.01
 
 ## Make mutation stronger if the models do poorly
+bonus_mutation_score_max = 20000  # If score is less than this, apply stronger mutation
 bonus_mutation_shift_factor = 2   # Std. Dev. of weights shifting
 bonus_mutation_scale_factor = 0.2 # Increased Scale factor 
-bonus_mutation_score_max = 20000
 
 num_actors = 10
 best_keep = 2 # Keep the best N actors to the next generation, kill the rest
