@@ -31,7 +31,7 @@ bonus_mutation_shift_factor = 2     # Std. Dev. of weights shifting
 bonus_mutation_scale_factor = 0.2   # Increased Scale factor 
 
 num_actors = 100                    # Number of actors to use
-best_keep = 10                      # Keep the best N actors to the next generation, kill the rest
+best_keep = 2                       # Keep the best N actors to the next generation, kill the rest
 
 num_generations = 50
 
@@ -125,7 +125,12 @@ def training():
     for i in range(num_actors):
         actors.append(TetrisActor(num_actions=env.action_space.n, num_hidden_units=num_hidden_units))
 
-    for generation_num in range(num_generations):
+    # for generation_num in range(num_generations):
+
+    generation_num = 0
+    while True:
+        generation_num += 1
+
         print(f"\nGeneration {generation_num+1}")
 
         # Test all of the actors
