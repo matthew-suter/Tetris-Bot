@@ -47,12 +47,16 @@ class TetrisActor(tf.keras.Model):
         super().__init__()
 
         self.dense1 = layers.Dense(num_hidden_units, activation="relu")
-        self.output_layer = layers.Dense(num_actions)
+        self.dense2 = layers.Dense(num_hidden_units, activation="relu")
+        self.dense3 = layers.Dense(num_hidden_units, activation="relu")
+        self.dense_output = layers.Dense(num_actions)
 
 
     def call(self, inputs: tf.Tensor) -> tf.Tensor:
         x = self.dense1(inputs)
-        return self.output_layer(x)
+        x = self.dense2(x)
+        x = self.dense3(x)
+        return self.dense_output(x)
 
 
     def shuffle_weights(self, shuffle_factor=0.01, fixed_shift=0):
@@ -61,9 +65,17 @@ class TetrisActor(tf.keras.Model):
         self._shuffle_layer_weights(dense1_weights, shuffle_factor, fixed_shift)
         self.dense1.set_weights(dense1_weights)
 
-        output_weights = self.output_layer.get_weights()
-        self._shuffle_layer_weights(output_weights, shuffle_factor, fixed_shift)
-        self.output_layer.set_weights(output_weights)
+        dense2_weights = self.dense2.get_weights()
+        self._shuffle_layer_weights(dense2_weights, shuffle_factor)
+        self.dense2.set_weights(dense2_weights)
+
+        dense3_weights = self.dense3.get_weights()
+        self._shuffle_layer_weights(dense3_weights, shuffle_factor)
+        self.dense3.set_weights(dense3_weights)
+        
+        output_weights = self.dense_output.get_weights()
+        self._shuffle_layer_weights(output_weights, shuffle_factor)
+        self.dense_output.set_weights(output_weights)
 
 
     def _shuffle_layer_weights(self, layer_weights, shuffle_factor, fixed_shift=0):
@@ -86,7 +98,7 @@ class TetrisActor(tf.keras.Model):
         # Get the base configuration from the parent class
         config = super().get_config()
         # Add custom parameters to the config
-        config['num_actions'] = self.output_layer.units
+        config['num_actions'] = self.dense_output.units
         config['num_hidden_units'] = self.dense1.units
         return config
 
@@ -189,15 +201,18 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
 
             if track_timing:
                 model_time_start = time.process_time_ns()
-            action = actor.call(tf.reshape(state, [1, -1]))
+            action_vec = actor.call(tf.reshape(state, [1, -1]))
             if track_timing:
                 model_time += time.process_time_ns() - model_time_start
 
             # print(actor.summary())
-            action = int(tf.argmax(action, axis=1))
+            action = int(tf.argmax(action_vec, axis=1))
 
             if track_timing:
                 game_time_start = time.process_time_ns()
+            if action >= 5:
+                print(action)
+            assert action < 5, f"Action={action}, shape={action_vec.shape}"
             greyscale, reward, done, truncated, info = env.step(action)
             if track_timing:
                 game_time += time.process_time_ns() - game_time_start
