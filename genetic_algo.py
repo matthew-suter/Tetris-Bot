@@ -61,9 +61,9 @@ class TetrisActor(tf.keras.Model):
         self._shuffle_layer_weights(dense1_weights, shuffle_factor)
         self.dense1.set_weights(dense1_weights)
 
-        dense2_weights = self.dense2.get_weights()
-        self._shuffle_layer_weights(dense2_weights, shuffle_factor)
-        self.dense2.set_weights(dense2_weights)
+        output_weights = self.output_layer.get_weights()
+        self._shuffle_layer_weights(output_weights, shuffle_factor)
+        self.output_layer.set_weights(output_weights)
 
         dense3_weights = self.dense3.get_weights()
         self._shuffle_layer_weights(dense3_weights, shuffle_factor)
