@@ -10,12 +10,14 @@ from PIL import Image
 # Additional reward code
 import additional_reward
 
+import time
+
 env = gym.make("ALE/Tetris-v5", obs_type="grayscale")
 # render_env = gym.make("ALE/Tetris-v5", obs_type="grayscale", render_mode="human")
 observation, info = env.reset()
 
 # Hyperparameters
-num_hidden_units = 50
+num_hidden_units = 400
 mutation_factor = 0.01
 
 # TODO: Implement these!
@@ -23,7 +25,7 @@ bonus_mutation_factor = 0.1
 bonus_mutation_score_max = 1500
 
 num_actors = 10
-best_keep = 5 # Keep the best N actors to the next generation, kill the rest
+best_keep = 2 # Keep the best N actors to the next generation, kill the rest
 
 num_generations = 5
 
@@ -92,7 +94,7 @@ def training():
         actors.append(TetrisActor(num_actions=env.action_space.n, num_hidden_units=num_hidden_units))
 
     for generation_num in range(num_generations):
-        print(f"Generation {generation_num+1}")
+        print(f"\nGeneration {generation_num+1}")
 
         # Test all of the actors
         filepath = f"genetic_previews/gen_{generation_num+1}.gif"
@@ -130,11 +132,24 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
 
     if render_game and not render_filename.endswith(".gif"):
         render_filename += ".gif"
+    
+
+    # CPU time tracking
+    track_timing = True
+
+    total_time = 0
+    game_time  = 0
+    model_time = 0
+
+    total_time_start = time.process_time_ns()
+    game_time_start = 0
+    model_time_start = 0
+
 
     for i, actor in enumerate(actors):
         # Game start
         if verbose_printing:
-            print(f"Training actor #{i+1}... ", end="")
+            print(f"Training actor #{i+1:02}... ", end="")
         greyscale, info = env.reset()
         state = greyscale_to_one_hot(greyscale)
 
@@ -151,11 +166,22 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
         while not (done or truncated):
             last_state = state
             state = greyscale_to_one_hot(greyscale)
+
+            if track_timing:
+                model_time_start = time.process_time_ns()
             action = actor.call(tf.reshape(state, [1, -1]))
+            if track_timing:
+                model_time += time.process_time_ns() - model_time_start
 
             # print(actor.summary())
             action = int(tf.argmax(action, axis=1))
+
+            if track_timing:
+                game_time_start = time.process_time_ns()
             greyscale, reward, done, truncated, info = env.step(action)
+            if track_timing:
+                game_time += time.process_time_ns() - game_time_start
+
             steps_survived += 1
             cumulative_score += additional_reward.calculate_additional_reward(last_state, state, False)
         
@@ -171,45 +197,16 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
         if verbose_printing:
             print(f"Lasted {steps_survived} steps, scored {cumulative_score} points")
         
-        # actor_scores[i] = steps_survived
         actor_scores[i] = cumulative_score
-        # actor_scores[i] = cumulative_additional_score / (steps_survived**2) # Fancy heuristic score
     
+
+    if track_timing:
+        total_time = time.process_time_ns() - total_time_start
+
+        print(f"\n\nTotal time: {total_time/1e9:0.2f} sec \nModel time: {model_time/1e9:0.2f} sec ({100*model_time/total_time:0.2f}%) \nGame time:  {game_time/1e9:0.2f} sec ({100*game_time/total_time:0.2f}%) \n")
+
+
     return actor_scores
-
-
-
-# def render_episode(actor: TetrisActor, filename: str, max_steps: int=-1):
-#     greyscale, info = render_env.reset()
-#     state = greyscale_to_one_hot(greyscale)
-
-#     done = False
-#     truncated = False
-#     step_limit_reached = False
-#     steps_survived = 0
-
-#     screen = render_env.render()
-#     images = [Image.fromarray(screen)]
-
-#     while not (done or truncated or step_limit_reached):
-#         last_state = state
-#         state = greyscale_to_one_hot(greyscale)
-#         action = actor.call(state)
-
-#         # print(actor.summary())
-#         action = int(tf.argmax(action, axis=1))
-#         greyscale, reward, done, truncated, info = render_env.step(action)
-#         steps_survived += 1
-#         step_limit_reached = steps_survived > max_steps and steps_survived != -1
-
-#         # Render screen every 10 steps
-#         if steps_survived % 10 == 0:
-#             screen = render_env.render()
-#             images.append(Image.fromarray(screen))
-    
-#     # loop=0: loop forever, duration=1: play each frame for 1ms
-#     images[0].save(
-#         filename, save_all=True, append_images=images[1:], loop=0, duration=1)
 
 
 
