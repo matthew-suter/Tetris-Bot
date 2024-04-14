@@ -25,7 +25,7 @@ bonus_mutation_factor = 0.1
 bonus_mutation_score_max = 1500
 
 num_actors = 10
-best_keep = 2 # Keep the best N actors to the next generation, kill the rest
+best_keep = 4 # Keep the best N actors to the next generation, kill the rest
 
 num_generations = 5
 
@@ -43,12 +43,16 @@ class TetrisActor(tf.keras.Model):
         super().__init__()
 
         self.dense1 = layers.Dense(num_hidden_units, activation="relu")
-        self.dense2 = layers.Dense(num_actions)
+        self.dense2 = layers.Dense(num_hidden_units, activation="relu")
+        self.dense3 = layers.Dense(num_hidden_units, activation="relu")
+        self.dense_output = layers.Dense(num_actions)
 
 
     def call(self, inputs: tf.Tensor) -> tf.Tensor:
         x = self.dense1(inputs)
-        return self.dense2(x)
+        x = self.dense2(x)
+        x = self.dense3(x)
+        return self.dense_output(x)
 
 
     def shuffle_weights(self, shuffle_factor=0.01):
@@ -61,6 +65,14 @@ class TetrisActor(tf.keras.Model):
         self._shuffle_layer_weights(dense2_weights, shuffle_factor)
         self.dense2.set_weights(dense2_weights)
 
+        dense3_weights = self.dense3.get_weights()
+        self._shuffle_layer_weights(dense3_weights, shuffle_factor)
+        self.dense3.set_weights(dense3_weights)
+        
+        output_weights = self.dense_output.get_weights()
+        self._shuffle_layer_weights(output_weights, shuffle_factor)
+        self.dense_output.set_weights(output_weights)
+
 
     def _shuffle_layer_weights(self, layer_weights, shuffle_factor):
         """Layer weights are a python list of numpy arrays. Gross, this scales each value by a random factor"""
@@ -68,13 +80,14 @@ class TetrisActor(tf.keras.Model):
             scale_factor = tf.random.uniform(layer_weights[i].shape, minval=1-shuffle_factor, maxval=1+shuffle_factor)
             scaled = layer_weights[i] * scale_factor
             layer_weights[i] = scaled
+        print(len(layer_weights))
 
 
     def get_config(self):
         # Get the base configuration from the parent class
         config = super().get_config()
         # Add custom parameters to the config
-        config['num_actions'] = self.dense2.units
+        config['num_actions'] = self.dense_output.units
         config['num_hidden_units'] = self.dense1.units
         return config
 
@@ -169,15 +182,18 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
 
             if track_timing:
                 model_time_start = time.process_time_ns()
-            action = actor.call(tf.reshape(state, [1, -1]))
+            action_vec = actor.call(tf.reshape(state, [1, -1]))
             if track_timing:
                 model_time += time.process_time_ns() - model_time_start
 
             # print(actor.summary())
-            action = int(tf.argmax(action, axis=1))
+            action = int(tf.argmax(action_vec, axis=1))
 
             if track_timing:
                 game_time_start = time.process_time_ns()
+            if action >= 5:
+                print(action)
+            assert action < 5, f"Action={action}, shape={action_vec.shape}"
             greyscale, reward, done, truncated, info = env.step(action)
             if track_timing:
                 game_time += time.process_time_ns() - game_time_start
