@@ -120,6 +120,8 @@ def training():
     assert num_actors % best_keep == 0, "An even proportion of the population must be saved!"
     actors = []
 
+    best_score = 0
+
     for i in range(num_actors):
         actors.append(TetrisActor(num_actions=env.action_space.n, num_hidden_units=num_hidden_units))
 
@@ -128,8 +130,10 @@ def training():
 
         # Test all of the actors
         filepath = f"genetic_previews/gen_{generation_num+1}.gif"
-        actor_scores = trial_actors(actors, verbose_printing=True, render_game=True, render_filename=filepath, generation=generation_num)
+        actor_scores = trial_actors(actors, verbose_printing=True, render_game=True, render_filename=filepath, generation=generation_num, global_best_score=best_score)
         print(np.sort(actor_scores))
+        best_score = np.max(actor_scores)
+        print(f"Best score so far: {best_score}")
 
         # Take the best N actors
         new_actors = []
@@ -156,7 +160,7 @@ def training():
 
 
 
-def trial_actors(actors, verbose_printing=False, render_game=False, render_filename="Tetris_Game", generation=0):
+def trial_actors(actors, verbose_printing=False, render_game=False, render_filename="Tetris_Game", generation=0, global_best_score=0):
     """
     Trials all actors in a supplied list
 
@@ -230,7 +234,8 @@ def trial_actors(actors, verbose_printing=False, render_game=False, render_filen
             if render_game and (steps_survived % image_frame_decimation == 0):
                 images.append(Image.fromarray(greyscale))
         
-        if render_game:
+        if render_game and global_best_score < cumulative_score:
+            global_best_score = cumulative_score
             # loop=0: loop forever, duration=1: play each frame for 1ms
             images[0].save(f"genetic_previews/{cumulative_score:06}_gen_{generation}_actor_{i}.gif", save_all=True, append_images=images[1:], loop=0, duration=1)
 
